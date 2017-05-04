@@ -48,7 +48,7 @@ extension Task {
         }
         
         self.name = name
-        self.identifier = TaskHelper.randomString(length: 5)
+        self.identifier = TaskHelper.randomString(length: 7)
         
         if let children = dict[Keys.children] as? Array<[String : Any]> {
             self.children = children.flatMap { Task(dict: $0) }

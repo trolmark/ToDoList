@@ -32,7 +32,7 @@ struct TaskGenerator {
                         [Keys.title: "Lie down", Keys.completed : true],
                     ]
                 ],
-                [Keys.title: "Dance", Keys.completed : true],
+                [Keys.title: "Dance", Keys.completed : false],
             ]
         ]
     ]

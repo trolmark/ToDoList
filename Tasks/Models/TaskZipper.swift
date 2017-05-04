@@ -43,6 +43,7 @@ struct TaskZipper {
                                                                          predicate: { $0.identifier == task.identifier })
         guard let newItem = maybeNewItem else { return }
         
+        // We need remove subtasks to avoid duplication of data
         let currentWithoutChildren = self.removeChildren(for: self.currentItem)
         let newCrumb = TaskCrumb(parent: currentWithoutChildren,
                                  head: precedingItems,

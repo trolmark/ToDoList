@@ -8,7 +8,9 @@
 
 import Foundation
 
-
+/*
+ Purpose for coordinator is to make one point of truth for data
+ */
 final class TaskCoordinator {
     
     weak var windowController: TaskUIFlow? {

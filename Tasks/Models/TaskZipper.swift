@@ -37,14 +37,14 @@ struct TaskZipper {
     }
     
     // search for name on the same level
-    mutating func moveTo(name: String)  {
+    mutating func moveTo(task: Task)  {
         guard let latestCrumb = breadcrumbs.last else {
             return
         }
         
         let all = latestCrumb.head + latestCrumb.tail
         let (maybeNewItem, _, followingItems) = self.search(in: all,
-                                                            predicate: { $0.name == name })
+                                                            predicate: { $0.name == task.name })
         guard let newItem = maybeNewItem else { return }
         
         breadcrumbs.removeLast()
@@ -60,9 +60,9 @@ struct TaskZipper {
     }
     
     
-    mutating func moveDown(name:String) {
+    mutating func moveDown(to task:Task) {
         let (maybeNewItem, precedingItems, followingItems) = self.search(in: self.currentItem.children,
-                                                                         predicate: { $0.name == name })
+                                                                         predicate: { $0.name == task.name })
         guard let newItem = maybeNewItem else { return }
         
         let newCrumb = TaskCrumb(parentName: self.currentItem.name,
@@ -94,6 +94,20 @@ struct TaskZipper {
         self.currentItem = Task(name: self.currentItem.name,
                                 status: self.currentItem.status,
                                 children: sortedChildren)
+    }
+    
+    mutating func delete(task:Task) {
+        let filtered = self.currentItem.children.filter { $0.name != task.name }
+        self.currentItem = Task(name: self.currentItem.name,
+                                status: fold(tasks: filtered),
+                                children: filtered)
+    }
+    
+    mutating func add(task:Task) {
+        let updated = self.currentItem.children + [task]
+        self.currentItem = Task(name: self.currentItem.name,
+                                status: fold(tasks: updated),
+                                children: updated)
     }
 }
 

@@ -36,7 +36,7 @@ extension TaskCoordinator : FlowProtocol {
     func didTapOn(task:Task) {
         
         DispatchQueue.global(qos: .userInitiated).async {
-            self.cursor.moveDown(name: task.name)
+            self.cursor.moveDown(to: task)
             self.cursor.changeStatus(to: task.status.opposite)
             self.cursor.moveUp()
             self.updateUI(with:self.cursor.currentItem.children)
@@ -60,7 +60,7 @@ extension TaskCoordinator : FlowProtocol {
     func didTapOnDetailsFor(task:Task) {
         
         DispatchQueue.global(qos: .userInitiated).async {
-            self.cursor.moveDown(name: task.name)
+            self.cursor.moveDown(to: task)
             let current = self.cursor.currentItem
             
             DispatchQueue.main.async {

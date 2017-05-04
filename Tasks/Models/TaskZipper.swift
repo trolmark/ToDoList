@@ -10,7 +10,7 @@ import Foundation
 
 
 struct TaskCrumb {
-    let parentName : String
+    let parent : Task
     let head: [Task]
     let tail: [Task]
 }
@@ -25,7 +25,9 @@ struct TaskZipper {
     private var breadcrumbs: [TaskCrumb] = []
     
     init(items: [Task]) {
-        let rootItem = Task(name: "",
+        // Fake item
+        let rootItem = Task(identifier:"",
+                            name: "",
                             status: .pending,
                             children: items)
         currentItem = rootItem
@@ -36,36 +38,13 @@ struct TaskZipper {
                                     for: self.currentItem)
     }
     
-    // search for name on the same level
-    mutating func moveTo(task: Task)  {
-        guard let latestCrumb = breadcrumbs.last else {
-            return
-        }
-        
-        let all = latestCrumb.head + latestCrumb.tail
-        let (maybeNewItem, _, followingItems) = self.search(in: all,
-                                                            predicate: { $0.name == task.name })
-        guard let newItem = maybeNewItem else { return }
-        
-        breadcrumbs.removeLast()
-        
-        var newPrecedingItems = latestCrumb.head
-        newPrecedingItems.append(currentItem)
-        
-        let newCrumb = TaskCrumb(parentName: latestCrumb.parentName,
-                                 head: newPrecedingItems,
-                                 tail: followingItems)
-        currentItem = newItem
-        breadcrumbs.append(newCrumb)
-    }
-    
-    
     mutating func moveDown(to task:Task) {
         let (maybeNewItem, precedingItems, followingItems) = self.search(in: self.currentItem.children,
-                                                                         predicate: { $0.name == task.name })
+                                                                         predicate: { $0.identifier == task.identifier })
         guard let newItem = maybeNewItem else { return }
         
-        let newCrumb = TaskCrumb(parentName: self.currentItem.name,
+        let currentWithoutChildren = self.removeChildren(for: self.currentItem)
+        let newCrumb = TaskCrumb(parent: currentWithoutChildren,
                                  head: precedingItems,
                                  tail: followingItems)
         currentItem = newItem
@@ -81,8 +60,9 @@ struct TaskZipper {
         newContents.append(currentItem)
         newContents.append(contentsOf:latestCrumb.tail)
         
-        let newTask = Task(name: latestCrumb.parentName,
-                           status: fold(tasks: newContents),
+        let newTask = Task(identifier:latestCrumb.parent.identifier,
+                           name: latestCrumb.parent.name,
+                           status: TaskHelper.fold(tasks: newContents),
                            children: newContents)
         currentItem = newTask
         breadcrumbs.removeLast()
@@ -91,31 +71,42 @@ struct TaskZipper {
     mutating func sort() {
         let currentChildren = self.currentItem.children
         let sortedChildren = currentChildren.sorted { $0.0.name < $0.1.name }
-        self.currentItem = Task(name: self.currentItem.name,
+        self.currentItem = Task(identifier:self.currentItem.identifier,
+                                name: self.currentItem.name,
                                 status: self.currentItem.status,
                                 children: sortedChildren)
     }
     
     mutating func delete(task:Task) {
-        let filtered = self.currentItem.children.filter { $0.name != task.name }
-        self.currentItem = Task(name: self.currentItem.name,
-                                status: fold(tasks: filtered),
+        let filtered = self.currentItem.children.filter { $0.identifier != task.identifier }
+        self.currentItem = Task(identifier:self.currentItem.identifier,
+                                name: self.currentItem.name,
+                                status: TaskHelper.fold(tasks: filtered),
                                 children: filtered)
     }
     
     mutating func add(task:Task) {
         let updated = self.currentItem.children + [task]
-        self.currentItem = Task(name: self.currentItem.name,
-                                status: fold(tasks: updated),
+        self.currentItem = Task(identifier:self.currentItem.identifier,
+                                name: self.currentItem.name,
+                                status: TaskHelper.fold(tasks: updated),
                                 children: updated)
     }
 }
 
 extension TaskZipper {
     
+    func removeChildren(for task:Task) -> Task {
+        return Task(identifier:task.identifier,
+                    name: task.name,
+                    status: task.status,
+                    children: [])
+    }
+    
     func set(newStatus:TaskStatus, for task:Task) -> Task {
         if task.children.isEmpty {
-            return Task(name: task.name,
+            return Task(identifier:task.identifier,
+                        name: task.name,
                         status: newStatus,
                         children: [])
         }
@@ -124,7 +115,8 @@ extension TaskZipper {
             return set(newStatus:newStatus, for:item)
         }
         
-        return Task(name: task.name,
+        return Task(identifier:task.identifier,
+                    name: task.name,
                     status: newStatus,
                     children: children)
     }

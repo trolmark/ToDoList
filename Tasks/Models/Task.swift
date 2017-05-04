@@ -32,6 +32,7 @@ extension TaskStatus {
 }
 
 struct Task {
+    let identifier : String
     let name : String
     let status : TaskStatus
     let children : [Task]
@@ -47,10 +48,11 @@ extension Task {
         }
         
         self.name = name
+        self.identifier = TaskHelper.randomString(length: 5)
         
         if let children = dict[Keys.children] as? Array<[String : Any]> {
             self.children = children.flatMap { Task(dict: $0) }
-            self.status = fold(tasks: self.children)
+            self.status = TaskHelper.fold(tasks: self.children)
         } else {
             self.children = []
             self.status = TaskStatus(status: status)
@@ -59,15 +61,29 @@ extension Task {
 }
 
 
-// Helper
-func fold(tasks:[Task]) -> TaskStatus {
-    
-    let newStatus : TaskStatus = tasks.reduce(.completed) { result, item  in
-        switch item.status {
-        case .pending : return .pending
-        case .completed : return result
+struct TaskHelper {
+
+    static func fold(tasks:[Task]) -> TaskStatus {
+        let newStatus : TaskStatus = tasks.reduce(.completed) { result, item  in
+            switch item.status {
+            case .pending : return .pending
+            case .completed : return result
+            }
         }
+        return newStatus
     }
-    return newStatus
+    
+    // Simple generator of task identifiers
+    static func randomString(length:Int) -> String {
+        let charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        var c = charSet.characters.map { String($0) }
+        var s:String = ""
+        for _ in (1...length) {
+            s.append(c[Int(arc4random()) % c.count])
+        }
+        return s
+    }
+
 }
+
 

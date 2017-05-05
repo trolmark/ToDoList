@@ -20,6 +20,7 @@ final class TaskCoordinator {
         }
     }
     
+    fileprivate var queue : DispatchQueue
     fileprivate var cursor : TaskZipper
     fileprivate var currentItems : [Task] {
         return self.cursor.currentItem.children
@@ -28,6 +29,8 @@ final class TaskCoordinator {
     init(_ generator:TaskGenerator) {
         let items = generator.parse()
         self.cursor = TaskZipper(items: items)
+        self.queue = DispatchQueue(label: "com.todoList.queue",
+                                   qos : .userInteractive)
     }
     
     func showInitialPage() {
@@ -41,7 +44,7 @@ extension TaskCoordinator : FlowProtocol {
     
     func didTapOn(task:Task) {
         
-        DispatchQueue.global(qos: .userInitiated).async {
+        self.queue.async {
             self.cursor.moveDown(to: task)
             self.cursor.changeStatus(to: task.status.opposite)
             self.cursor.moveUp()
@@ -50,14 +53,14 @@ extension TaskCoordinator : FlowProtocol {
     }
     
     func sort() {
-        DispatchQueue.global(qos: .userInitiated).async {
+        self.queue.async {
             self.cursor.sort()
             self.updateUI(with: self.currentItems)
         }
     }
     
     func completeAll() {
-        DispatchQueue.global(qos: .userInitiated).async {
+        self.queue.async {
             self.cursor.changeStatus(to: .completed)
             self.updateUI(with:self.currentItems)
         }
@@ -65,7 +68,7 @@ extension TaskCoordinator : FlowProtocol {
     
     func didTapOnDetailsFor(task:Task) {
         
-        DispatchQueue.global(qos: .userInitiated).async {
+        self.queue.async {
             self.cursor.moveDown(to: task)
             let current = self.cursor.currentItem
             
@@ -76,7 +79,7 @@ extension TaskCoordinator : FlowProtocol {
     }
     
     func didMoveBack() {
-        DispatchQueue.global(qos: .userInitiated).async {
+        self.queue.async {
             self.cursor.moveUp()
             self.updateUI(with: self.currentItems)
         }

@@ -8,7 +8,8 @@ To-do list project, made as exercise. General idea - list of task with subtasks,
 
 **UI** : 
 * [TaskViewController](https://github.com/trolmark/ToDoList/blob/master/Tasks/UI/TaskViewController.swift) - table view controller, which display list of tasks
- * [TaskUIFlow](https://github.com/trolmark/ToDoList/blob/master/Tasks/UI/TaskUIFlow.swift) flow controller, which manages navigation flow between controllers (go to details of some task, etc.) Purpose for flow object is to make taskViewController completely torn away from
+ * [TaskUIFlow](https://github.com/trolmark/ToDoList/blob/master/Tasks/UI/TaskUIFlow.swift) flow controller, which manages navigation flow between controllers (go to details of some task, etc.) 
+ Purpose for flow object is to make TaskViewController completely torn away from
  environment where is presented and remove chain with all neighboring controllers
  
  **Logic**
